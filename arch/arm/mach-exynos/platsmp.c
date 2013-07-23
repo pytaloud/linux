@@ -50,6 +50,16 @@ static inline void __iomem *cpu_boot_reg(int cpu)
 	boot_reg = cpu_boot_reg_base();
 	if (soc_is_exynos4412())
 		boot_reg += 4*cpu;
+	else if (soc_is_exynos5410()) {
+		int cluster_id = read_cpuid_mpidr() & 0x100;
+		if (samsung_rev() < EXYNOS5410_REV_1_0) {
+			if (cluster_id == 0)
+				boot_reg += 4;
+		} else {
+			if (cluster_id != 0)
+				boot_reg += 4;
+		}
+	}
 	else if (soc_is_exynos5420())
 		boot_reg += 4;
 	return boot_reg;
