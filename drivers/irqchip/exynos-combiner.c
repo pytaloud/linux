@@ -18,6 +18,7 @@
 #include <linux/of_address.h>
 #include <linux/of_irq.h>
 #include <asm/mach/irq.h>
+#include <plat/cpu.h>
 
 #include "irqchip.h"
 
@@ -226,7 +227,10 @@ static int __init combiner_of_init(struct device_node *np,
 	 * get their IRQ from DT, remove this in order to get dynamic
 	 * allocation.
 	 */
-	irq_base = 160;
+	if(soc_is_exynos5410())
+		irq_base = 256;
+	else
+		irq_base = 160;
 
 	combiner_init(combiner_base, np, max_nr, irq_base);
 
