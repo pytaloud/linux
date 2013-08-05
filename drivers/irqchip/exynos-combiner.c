@@ -19,6 +19,8 @@
 #include <linux/of_irq.h>
 #include <asm/mach/irq.h>
 
+#include <plat/cpu.h>
+
 #include "irqchip.h"
 
 #define COMBINER_ENABLE_SET	0x0
