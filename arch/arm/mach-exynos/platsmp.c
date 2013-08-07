@@ -40,9 +40,14 @@ static inline void __iomem *cpu_boot_reg_base(void)
 {
 	if (soc_is_exynos4210() && samsung_rev() == EXYNOS4210_REV_1_1)
 		return S5P_INFORM5;
+	else if (soc_is_exynos5410())
+		return S5P_VA_SYSRAM_NS + 0x1C;
 	return S5P_VA_SYSRAM;
 }
 
+/*
+ * Get the wakt-up base address for secondary cores
+ */
 static inline void __iomem *cpu_boot_reg(int cpu)
 {
 	void __iomem *boot_reg;
@@ -100,10 +105,38 @@ static void exynos_secondary_init(unsigned int cpu)
 	spin_unlock(&boot_lock);
 }
 
+static int exynos_power_up_cpu(unsigned int cpu)
+{
+	unsigned long timeout = jiffies + msecs_to_jiffies(10);
+	unsigned int val;
+	void __iomem *power_base;
+
+	power_base = EXYNOS_ARM_CORE_CONFIGURATION(cpu);
+	val = __raw_readl(power_base + EXYNOS_ARM_CORE_X_STATUS_OFFSET);
+	if (!(val & EXYNOS_CORE_LOCAL_PWR_EN)) {
+		__raw_writel(EXYNOS_CORE_LOCAL_PWR_EN, power_base);
+
+		/* wait max 10 ms until cpu is on */
+		while (time_after(jiffies, timeout)) {
+			val = __raw_readl(power_base +
+					    EXYNOS_ARM_CORE_X_STATUS_OFFSET);
+
+			if ((val & EXYNOS_CORE_LOCAL_PWR_EN) ==
+			     EXYNOS_CORE_LOCAL_PWR_EN)
+				break;
+
+			mdelay(1);
+		}
+	}
+
+	return 0;
+}
+
 static int exynos_boot_secondary(unsigned int cpu, struct task_struct *idle)
 {
 	unsigned long timeout;
 	unsigned long phys_cpu = cpu_logical_map(cpu);
+	int ret;
 
 	/*
 	 * Set synchronisation state between this boot processor
@@ -121,27 +154,12 @@ static int exynos_boot_secondary(unsigned int cpu, struct task_struct *idle)
 	 */
 	write_pen_release(phys_cpu);
 
-	if (!(__raw_readl(S5P_ARM_CORE1_STATUS) & S5P_CORE_LOCAL_PWR_EN)) {
-		__raw_writel(S5P_CORE_LOCAL_PWR_EN,
-			     S5P_ARM_CORE1_CONFIGURATION);
-
-		timeout = 10;
-
-		/* wait max 10 ms until cpu1 is on */
-		while ((__raw_readl(S5P_ARM_CORE1_STATUS)
-			& S5P_CORE_LOCAL_PWR_EN) != S5P_CORE_LOCAL_PWR_EN) {
-			if (timeout-- == 0)
-				break;
-
-			mdelay(1);
-		}
-
-		if (timeout == 0) {
-			printk(KERN_ERR "cpu1 power enable failed");
-			spin_unlock(&boot_lock);
-			return -ETIMEDOUT;
-		}
+	ret = exynos_power_up_cpu(cpu);
+	if (ret) {
+		spin_unlock(&boot_lock);
+		return ret;
 	}
+
 	/*
 	 * Send the secondary CPU a soft interrupt, thereby causing
 	 * the boot monitor to read the system wide flags register,
