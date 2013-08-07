@@ -399,9 +399,11 @@ static irqreturn_t exynos5_i2c_irq(int irqno, void *dev_id)
 		}
 	}
 
-		len = HSI2C_FIFO_MAX - fifo_level;
-		if (len > i2c->msg->len)
-			len = i2c->msg->len;
+	if ((i2c->msg->flags & I2C_M_RD) && (int_status &
+			(HSI2C_INT_TRAILING | HSI2C_INT_RX_ALMOSTFULL))) {
+		fifo_status = readl(i2c->regs + HSI2C_FIFO_STATUS);
+		fifo_level = HSI2C_RX_FIFO_LVL(fifo_status);
+		len = min(fifo_level, i2c->msg->len - i2c->msg_ptr);
 
 		while (len > 0) {
 			byte = (unsigned char)
@@ -414,14 +416,9 @@ static irqreturn_t exynos5_i2c_irq(int irqno, void *dev_id)
 		fifo_status = readl(i2c->regs + HSI2C_FIFO_STATUS);
 		fifo_level = HSI2C_TX_FIFO_LVL(fifo_status);
 
-	if (int_status & (HSI2C_INT_RX_OVERRUN | HSI2C_INT_TRAILING |
-		HSI2C_INT_RX_UNDERRUN | HSI2C_INT_RX_ALMOSTFULL)) {
-		fifo_level = HSI2C_RX_FIFO_LVL(fifo_status);
-
-		if (fifo_level >= i2c->msg->len)
-			len = i2c->msg->len;
-		else
-			len = fifo_level;
+		len = HSI2C_FIFO_MAX - fifo_level;
+		if (len > (i2c->msg->len - i2c->msg_ptr))
+			len = i2c->msg->len - i2c->msg_ptr;
 
 		while (len > 0) {
 			byte = i2c->msg->buf[i2c->msg_ptr++];
@@ -571,10 +568,7 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
 			struct i2c_msg *msgs, int num)
 {
 	struct exynos5_i2c *i2c = (struct exynos5_i2c *)adap->algo_data;
-	struct i2c_msg *msgs_ptr = msgs;
-	int i = 0;
-	int ret = 0, ret_pm;
-	int stop = 0;
+	int i = 0, ret = 0, stop = 0;
 
 	if (i2c->suspended) {
 		dev_err(i2c->dev, "HS-I2C is not initialzed.\n");
@@ -583,11 +577,10 @@ static int exynos5_i2c_xfer(struct i2c_adapter *adap,
 
 	clk_prepare_enable(i2c->clk);
 
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < num; i++, msgs++) {
 		stop = (i == num - 1);
 
-		ret = exynos5_i2c_xfer_msg(i2c, msgs_ptr, stop);
-		msgs_ptr++;
+		ret = exynos5_i2c_xfer_msg(i2c, msgs, stop);
 
 		if (ret < 0)
 			goto out;
@@ -651,6 +644,7 @@ static int exynos5_i2c_probe(struct platform_device *pdev)
 	strlcpy(i2c->adap.name, "exynos5-i2c", sizeof(i2c->adap.name));
 	i2c->adap.owner   = THIS_MODULE;
 	i2c->adap.algo    = &exynos5_i2c_algorithm;
+	i2c->adap.retries = 3;
 
 	i2c->dev = &pdev->dev;
 	i2c->clk = devm_clk_get(&pdev->dev, "hsi2c");
