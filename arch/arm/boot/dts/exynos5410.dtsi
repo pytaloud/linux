@@ -284,7 +284,7 @@
 		reg = <0x12110000 0x100>;
 		interrupts = <0 71 0>;
 		clocks = <&clock 365>;
-		clock-names = "usbh20";
+		clock-names = "usbhost";
 		status = "disabled";
 	};
 
@@ -293,6 +293,21 @@
 		reg = <0x12120000 0x100>;
 		interrupts = <0 71 0>;
 		clocks = <&clock 365>;
-		clock-names = "usbh20";
+		clock-names = "usbhost";
+	};
+
+	usb2_phy: usbphy@12130000 {
+		compatible = "samsung,exynos5420-usb2phy";
+		reg = <0x12130000 0x100>;
+		clocks = <&clock 1>, <&clock 365>;
+		clock-names = "ext_xtal", "usbhost";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		usbphy-sys {
+			reg = <0x10040704 0xc>,
+				  <0x10050230 0x4>;
+		};
 	};
 };
