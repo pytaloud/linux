@@ -28,9 +28,9 @@
 		pinctrl2 = &pinctrl_2;
 		pinctrl3 = &pinctrl_3;
 		i2c0 = &i2c_0;
-		i2c1 = &i2c_0;
-		i2c2 = &i2c_0;
-		i2c3 = &i2c_0;
+		i2c1 = &i2c_1;
+		i2c2 = &i2c_2;
+		i2c3 = &i2c_3;
 		i2c4 = &hsi2c_4;
 		i2c5 = &hsi2c_5;
 		i2c6 = &hsi2c_6;
@@ -361,7 +361,7 @@
 	};
 
 	usb2_phy: usbphy@12130000 {
-		compatible = "samsung,exynos5420-usb2phy";
+		compatible = "samsung,exynos5250-usb2phy";
 		reg = <0x12130000 0x100>;
 		clocks = <&clock 1>, <&clock 365>;
 		clock-names = "ext_xtal", "usbhost";
