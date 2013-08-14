@@ -54,13 +54,15 @@
 	
 	dwmmc_0: dwmmc0@12200000 {
 		num-slots = <1>;
-		supports-highspeed;
+		supports-highspeed;     /* >= 25MHz */
+		supports-hs200-mode;    /* 200MHz */
 		broken-cd;
+		bypass-smu;
 		fifo-depth = <0x80>;
 		card-detect-delay = <200>;
 		samsung,dw-mshc-ciu-div = <3>;
-		samsung,dw-mshc-sdr-timing = <2 3>;
-		samsung,dw-mshc-ddr-timing = <1 2>;
+		samsung,dw-mshc-sdr-timing = <0 4>;
+		samsung,dw-mshc-ddr-timing = <0 2>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&sd0_clk &sd0_cmd &sd0_bus4 &sd0_bus8>;
 
