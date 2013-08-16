@@ -379,7 +379,7 @@
 			secondary-refclk;
 			reset-gpios = <&gpx1 4 1>;
 			connect-gpios = <&gpx0 6 1>;
-			intn-gpios = <&gpx0 7 1>;
+			int-gpios = <&gpx0 7 1>;
 			initial-mode = <1>;  /* HUB mode */
 		};
 	 };
