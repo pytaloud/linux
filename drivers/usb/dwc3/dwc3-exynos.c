@@ -26,6 +26,7 @@
 #include <linux/usb/otg.h>
 #include <linux/usb/usb_phy_gen_xceiv.h>
 #include <linux/of.h>
+#include <linux/of_gpio.h>
 #include <linux/of_platform.h>
 
 struct dwc3_exynos {
@@ -100,6 +101,25 @@ static int dwc3_exynos_remove_child(struct device *dev, void *unused)
 	return 0;
 }
 
+static void dwc3_setup_vbus_gpio(struct platform_device *pdev)
+{
+	struct device *dev = &pdev->dev;
+	int err;
+	int gpio;
+
+	if (!dev->of_node)
+		return;
+
+	gpio = of_get_named_gpio(dev->of_node, "samsung,vbus-gpio", 0);
+	if (!gpio_is_valid(gpio))
+		return;
+
+	err = devm_gpio_request_one(dev, gpio, GPIOF_OUT_INIT_HIGH,
+				    "dwc3_vbus_gpio");
+	if (err)
+		dev_err(dev, "can't request dwc3 vbus gpio %d", gpio);
+}
+
 static int dwc3_exynos_probe(struct platform_device *pdev)
 {
 	struct dwc3_exynos	*exynos;
@@ -123,6 +143,8 @@ static int dwc3_exynos_probe(struct platform_device *pdev)
 	ret = dma_coerce_mask_and_coherent(dev, DMA_BIT_MASK(32));
 	if (ret)
 		goto err1;
+
+	dwc3_setup_vbus_gpio(pdev);
 
 	platform_set_drvdata(pdev, exynos);
 
