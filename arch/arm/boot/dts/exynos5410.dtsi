@@ -15,7 +15,7 @@
  */
 
 #include "exynos5.dtsi"
-/include/ "exynos5410-pinctrl.dtsi"
+#include "exynos5410-pinctrl.dtsi"
 / {
 	compatible = "samsung,exynos5410";
 
