@@ -54,11 +54,11 @@
 	
 	dwmmc_0: dwmmc0@12200000 {
 		num-slots = <1>;
-		supports-highspeed;     /* >= 25MHz */
-		supports-hs200-mode;    /* 200MHz */
+		supports-highspeed;
+		supports-hs200-mode;	/* 200MHz */
 		broken-cd;
 		bypass-smu;
-		fifo-depth = <0x80>;
+		fifo-depth = <0x40>;
 		card-detect-delay = <200>;
 		samsung,dw-mshc-ciu-div = <3>;
 		samsung,dw-mshc-sdr-timing = <0 4>;
@@ -79,7 +79,7 @@
 	dwmmc_2: dwmmc2@12220000 {
 		num-slots = <1>;
 		supports-highspeed;
-		fifo-depth = <0x80>;
+		fifo-depth = <0x40>;
 		card-detect-delay = <200>;
 		samsung,dw-mshc-ciu-div = <3>;
 		samsung,dw-mshc-sdr-timing = <2 3>;
@@ -452,5 +452,27 @@
 		samsung,vbus-gpio = <&gpk2 7 0>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb3_vbus1_en>, <&usb3_overcur1_u3>, <&usb3_overcur1_u2>;
+	};
+	
+	leds {
+		compatible = "gpio-leds";
+		hearbeat {
+			label = "red:heartbeart";		
+			gpios = <&gpx2 3 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+			linux,default-trigger = "heartbeat";
+		};
+		eMMC {
+			label = "green:activity";
+			gpios = <&gpb2 1 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+			linux,default-trigger = "mmc0";
+		};
+		microSD {
+			label = "blue:activity";
+			gpios = <&gpb2 2 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+			linux,default-trigger = "mmc1";
+		};
 	};
 };
