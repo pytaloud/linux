@@ -73,7 +73,7 @@
 	};
 
 	dwmmc_1: dwmmc1@12210000 {
-		status = "disabled";
+		 status = "disabled";
 	};
 
 	dwmmc_2: dwmmc2@12220000 {
@@ -474,5 +474,29 @@
 			default-state = "on";
 			linux,default-trigger = "mmc1";
 		};
+	};
+	
+	lcd_fimd0: lcd_panel0 {
+		lcd-htiming = <80 48 32 2560>;
+		lcd-vtiming = <16 8 6 1600>;
+	};
+
+	fimd {
+		samsung,fimd-display = <&lcd_fimd0>;
+		samsung,fimd-vidout-rgb;
+		samsung,fimd-inv-vclk;
+		samsung,fimd-frame-rate = <60>;
+		samsung,default-window = <0>;
+		samsung,fimd-win-bpp = <32>;
+		samsung,fimd-src-clk-rate = <266000000>;
+	};
+
+	display-port-controller {
+		samsung,color-space = <0>;
+		samsung,dynamic-range = <0>;
+		samsung,ycbcr-coeff = <0>;
+		samsung,color-depth = <1>;
+		samsung,link-rate = <0x0a>;
+		samsung,lane-count = <4>;
 	};
 };
