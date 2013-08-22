@@ -76,7 +76,6 @@ static bool turbo_mode = true;
 module_param(turbo_mode, bool, 0644);
 MODULE_PARM_DESC(turbo_mode, "Enable multiple frames per Rx transaction");
 
-#if defined(CONFIG_MACH_HKDK4412)
 const   char *filepath = "/etc/smsc95xx_mac_addr";
 
 int smsc95xx_read_mac_addr(unsigned char *mac)
@@ -135,7 +134,6 @@ int smsc95xx_read_mac_addr(unsigned char *mac)
 
     return  0;
 }
-#endif  
 
 static int __must_check __smsc95xx_read_reg(struct usbnet *dev, u32 index,
 					    u32 *data, int in_pm)
@@ -840,11 +838,9 @@ static void smsc95xx_init_mac_address(struct usbnet *dev)
 
 	/* no eeprom, or eeprom values are invalid. generate random MAC */
 	eth_hw_addr_random(dev->net);
-#if defined(CONFIG_MACH_HKDK4412)
 	if(smsc95xx_read_mac_addr(dev->net->dev_addr) < 0) {
 		netdev_warn(dev->net, "Failed to write /etc/smsc95xx_mac_addr file!\n");
 	}
-#endif
 	netif_dbg(dev, ifup, dev->net, "MAC address set to eth_random_addr\n");
 }
 
