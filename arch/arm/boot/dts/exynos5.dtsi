@@ -13,6 +13,8 @@
  * published by the Free Software Foundation.
  */
 
+#include <dt-bindings/gpio/gpio.h>
+
 #include "skeleton.dtsi"
 
 / {
