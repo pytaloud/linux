@@ -34,3 +34,5 @@ AFLAGS_exynos-smc.o		:=-Wa,-march=armv7-a$(plus_sec)
 
 obj-$(CONFIG_ARCH_EXYNOS4)	+= mach-exynos4-dt.o
 obj-$(CONFIG_ARCH_EXYNOS5)	+= mach-exynos5-dt.o
+
+obj-$(CONFIG_SOC_EXYNOS5410)		+= edcs.o
