@@ -62,7 +62,9 @@
 	};
 
 	mmc@12220000 {
-		status = "okay";
+		vqmmc-supply = <&vqmmc_sdcard>;
+		vmmc-supply = <&vmmc_sdcard>;
+	 	status = "okay";
 		num-slots = <1>;
 		supports-highspeed;
 		card-detect-delay = <200>;
@@ -130,7 +132,36 @@
 		};
 	};
 
-	pinctrl@14000000 {
+    i2c@12C80000 {
+        status = "okay";
+        samsung,i2c-sda-delay = <100>;
+        samsung,i2c-max-bus-freq = <6600>;
+        samsung,i2c-slave-addr = <0x50>;
+
+        hdmihdcp@3a {
+            compatible = "samsung,exynos4210-hdmihdcp";
+            reg = <0x3a>;
+        };
+
+        hdmiddc@50 {
+            compatible = "samsung,exynos4210-hdmiddc";
+            reg = <0x50>;
+        };
+    };
+
+	i2c@12CE0000 {
+        status = "okay";
+        samsung,i2c-sda-delay = <100>;
+        samsung,i2c-max-bus-freq = <66000>;
+        samsung,i2c-slave-addr = <0x38>;
+
+        hdmihdcp@38 {
+            compatible = "samsung,exynos4210-hdmiphy";
+            reg = <0x38>;
+        };
+    };
+
+    pinctrl@14000000 {
 		usb3_overcur0_u2: usb3-overcur0-u2 {
 			samsung,pins = "gpk3-0";
 			samsung,pin-function = <2>;
@@ -177,8 +208,7 @@
 	/* hsic24 */
 	hsi2c@12CA0000 {
 		status = "okay";
-		samsung,hs-mode;
-		clock-frequency = <1000000>;
+		clock-frequency = <400000>;
 
 		max77802-pmic@9 {
 			compatible = "maxim,max77802";
@@ -210,10 +240,10 @@
 					regulator-always-on;
 					regulator-op-mode = <2>;
 				};
-				ldo4_reg: LDO4 {
+				vqmmc_sdcard: ldo4_reg: LDO4 {
 					regulator-name = "vdd_sd";
-					regulator-min-microvolt = <2800000>;
-					regulator-max-microvolt = <2800000>;
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <3000000>;
 					regulator-always-on;
 					regulator-op-mode = <1>;
 				};
@@ -305,11 +335,10 @@
 					regulator-always-on;
 					regulator-op-mode = <0>;
 				};
-				ldo21_reg: LDO21 {
+				vmmc_sdcard: ldo21_reg: LDO21 {
 					regulator-name = "ldo_21";
-					regulator-min-microvolt = <2850000>;
-					regulator-max-microvolt = <2850000>;
-					regulator-always-on;
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <3300000>;
 				};
 				ldo23_reg: LDO23 {
 					regulator-name = "ldo_23";
@@ -424,9 +453,9 @@
 					regulator-op-mode = <3>;
 				};
 				buck10_reg: BUCK10 {
-					regulator-name = "vdd_1v8";
-					regulator-min-microvolt = <1800000>;
-					regulator-max-microvolt = <1800000>;
+					regulator-name = "vdd_2v85";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <3000000>;
 					regulator-always-on;
 					regulator-boot-on;
 					regulator-op-mode = <3>;
@@ -479,6 +508,6 @@
 		status = "okay";
 		samsung,vbus-gpio = <&gpk2 7 0>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&usb3_vbus1_en &usb3_overcur1_u3 &usb3_overcur1_u2>;
+		pinctrl-0 = <&usb3_vbus1_en>, <&usb3_overcur1_u3>, <&usb3_overcur1_u2>;
 	};
 };
