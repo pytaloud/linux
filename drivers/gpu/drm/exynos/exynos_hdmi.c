@@ -1682,9 +1682,11 @@ static void hdmi_poweron(struct hdmi_context *hdata)
 	hdata->powered = true;
 
 	mutex_unlock(&hdata->hdmi_mutex);
-
-	if (regulator_bulk_enable(res->regul_count, res->regul_bulk))
-		DRM_DEBUG_KMS("failed to enable regulator bulk\n");
+	
+	if (res->regul_count) {
+    	if (regulator_bulk_enable(res->regul_count, res->regul_bulk))
+    		DRM_DEBUG_KMS("failed to enable regulator bulk\n");
+	}
 
 	clk_prepare_enable(res->hdmiphy);
 	clk_prepare_enable(res->hdmi);
@@ -1712,7 +1714,10 @@ static void hdmi_poweroff(struct hdmi_context *hdata)
 	clk_disable_unprepare(res->sclk_hdmi);
 	clk_disable_unprepare(res->hdmi);
 	clk_disable_unprepare(res->hdmiphy);
-	regulator_bulk_disable(res->regul_count, res->regul_bulk);
+
+    if (res->regul_count)   {
+    	regulator_bulk_disable(res->regul_count, res->regul_bulk);
+    }
 
 	mutex_lock(&hdata->hdmi_mutex);
 
@@ -1825,18 +1830,23 @@ static int hdmi_resources_init(struct hdmi_context *hdata)
 
 	res->regul_bulk = devm_kzalloc(dev, ARRAY_SIZE(supply) *
 		sizeof(res->regul_bulk[0]), GFP_KERNEL);
-	if (!res->regul_bulk)
-		goto fail;
-	for (i = 0; i < ARRAY_SIZE(supply); ++i) {
-		res->regul_bulk[i].supply = supply[i];
-		res->regul_bulk[i].consumer = NULL;
-	}
-	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(supply), res->regul_bulk);
-	if (ret) {
-		DRM_ERROR("failed to get regulators\n");
-		goto fail;
-	}
-	res->regul_count = ARRAY_SIZE(supply);
+    
+    if (res->regul_bulk)    {
+    	for (i = 0; i < ARRAY_SIZE(supply); ++i) {
+    		res->regul_bulk[i].supply = supply[i];
+    		res->regul_bulk[i].consumer = NULL;
+    	}
+    	ret = devm_regulator_bulk_get(dev, ARRAY_SIZE(supply), res->regul_bulk);
+    	if (ret) {
+    		DRM_ERROR("failed to get regulators\n");
+    		goto fail;
+    	}
+    	res->regul_count = ARRAY_SIZE(supply);
+    }
+    else    {
+		DRM_ERROR("%s : Warning! failed to get regulators\n", __func__);
+    	res->regul_count = 0;
+    }
 
 	return 0;
 fail:

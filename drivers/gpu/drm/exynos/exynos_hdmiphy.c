@@ -24,22 +24,29 @@
 static int hdmiphy_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
 {
+
 	hdmi_attach_hdmiphy_client(client);
 
-	dev_info(&client->adapter->dev, "attached s5p_hdmiphy "
-		"into i2c adapter successfully\n");
+	dev_info(&client->adapter->dev, "attached %s "
+		"into i2c adapter successfully\n", client->name);
 
 	return 0;
 }
 
 static int hdmiphy_remove(struct i2c_client *client)
 {
-	dev_info(&client->adapter->dev, "detached s5p_hdmiphy "
-		"from i2c adapter successfully\n");
+	dev_info(&client->adapter->dev, "detached %s "
+		"from i2c adapter successfully\n", client->name);
 
 	return 0;
 }
 
+static const struct i2c_device_id hdmiphy_id[] = {
+    { "exynos5-hdmiphy", 0 },
+    { "exynos4210-hdmiphy", 0 },
+    { "exynos4212-hdmiphy", 0 },
+    { },
+};
 static struct of_device_id hdmiphy_match_types[] = {
 	{
 		.compatible = "samsung,exynos5-hdmiphy",
@@ -56,10 +63,12 @@ struct i2c_driver hdmiphy_driver = {
 	.driver = {
 		.name	= "exynos-hdmiphy",
 		.owner	= THIS_MODULE,
+
 		.of_match_table = hdmiphy_match_types,
 	},
+	.id_table   = hdmiphy_id,
 	.probe		= hdmiphy_probe,
 	.remove		= hdmiphy_remove,
-	.command		= NULL,
+	.command    = NULL,
 };
 EXPORT_SYMBOL(hdmiphy_driver);

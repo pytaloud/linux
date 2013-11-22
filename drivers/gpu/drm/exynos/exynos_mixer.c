@@ -1155,6 +1155,12 @@ static struct platform_device_id mixer_driver_types[] = {
 		.name		= "exynos5-mixer",
 		.driver_data	= (unsigned long)&exynos5250_mxr_drv_data,
 	}, {
+		.name		= "exynos5250-mixer",
+		.driver_data	= (unsigned long)&exynos5250_mxr_drv_data,
+	}, {
+		.name		= "exynos5420-mixer",
+		.driver_data	= (unsigned long)&exynos5420_mxr_drv_data,
+	}, {
 		/* end node */
 	}
 };
