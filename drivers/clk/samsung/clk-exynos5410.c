@@ -181,9 +181,13 @@ static struct samsung_mux_clock exynos5410_mux_clks[] __initdata = {
 	MUX_A(0, "mout_aclk200_disp1", aclk200_disp1_p,
 			SRC_TOP3, 4, 1, "aclk200_disp1"),
 
+	/* FSYS BLOCK */
 	MUX(0, "mout_mmc0", group2_p, SRC_FSYS, 0, 4),
 	MUX(0, "mout_mmc1", group2_p, SRC_FSYS, 4, 4),
 	MUX(0, "mout_mmc2", group2_p, SRC_FSYS, 8, 4),
+	MUX(0, "mout_usbd300", group6_p, SRC_FSYS, 28, 1),
+	MUX(0, "mout_usbd301", group6_p, SRC_FSYS, 29, 1),
+
 
 	MUX(0, "mout_uart0", group2_p, SRC_PERIC0, 0, 4),
 	MUX(0, "mout_uart1", group2_p, SRC_PERIC0, 4, 4),
@@ -209,6 +213,12 @@ static struct samsung_div_clock exynos5410_div_clks[] __initdata = {
 
 	DIV(0, "aclk66_pre", "sclk_mpll_muxed", DIV_TOP1, 24, 3),
 	DIV(0, "aclk66", "aclk66_pre", DIV_TOP0, 0, 3),
+
+	/* USB 3.0 */
+	DIV(0, "div_usbphy300", "mout_usbd300", DIV_FSYS1, 16, 4),
+	DIV(0, "div_usbphy301", "mout_usbd301", DIV_FSYS1, 20, 4),
+	DIV(0, "div_usbd300", "mout_usbd300", DIV_FSYS1, 24, 4),
+	DIV(0, "div_usbd301", "mout_usbd301", DIV_FSYS1, 28, 4),
 
 	DIV(0, "div_mmc0", "mout_mmc0", DIV_FSYS1, 0, 4),
 	DIV(0, "div_mmc1", "mout_mmc1", DIV_FSYS1, 16, 4),
@@ -242,6 +252,11 @@ static struct samsung_gate_clock exynos5410_gate_clks[] __initdata = {
 	GATE(CLK_SCLK_MMC2, "sclk_mmc2", "div_mmc_pre2",
 		SRC_MASK_FSYS, 8, CLK_SET_RATE_PARENT, 0),
 
+	GATE(CLK_SCLK_USBD300, "sclk_usbd300", "div_usbphy300",
+		SRC_MASK_FSYS, 24, CLK_SET_RATE_PARENT, 0),
+	GATE(CLK_SCLK_USBD301, "sclk_usbd301", "div_usbphy301",
+		SRC_MASK_FSYS, 28, CLK_SET_RATE_PARENT, 0),
+
 	GATE(CLK_MMC0, "sdmmc0", "aclk200", GATE_BUS_FSYS0, 12, 0, 0),
 	GATE(CLK_MMC1, "sdmmc1", "aclk200", GATE_BUS_FSYS0, 13, 0, 0),
 	GATE(CLK_MMC2, "sdmmc2", "aclk200", GATE_BUS_FSYS0, 14, 0, 0),
@@ -265,6 +280,10 @@ static struct samsung_gate_clock exynos5410_gate_clks[] __initdata = {
 	GATE(CLK_MIXER, "mixer", "mout_aclk200_disp1", GATE_IP_DISP1, 5, 0, 0),
 	GATE(CLK_HDMI, "hdmi", "mout_aclk200_disp1", GATE_IP_DISP1, 6, 0, 0),
 	GATE(CLK_SMMU_FIMD1, "smmu_fimd1", "aclk300_disp1", GATE_IP_DISP1, 8, 0, 0),
+
+	GATE(CLK_USBH20, "usbh20", "aclk200", GATE_BUS_FSYS0, 20, 0, 0),
+	GATE(CLK_USBD300, "usbd300", "aclk200", GATE_BUS_FSYS0, 21, 0, 0),
+	GATE(CLK_USBD301, "usbd301", "aclk200", GATE_BUS_FSYS0, 28, 0, 0),
 };
 
 static struct samsung_pll_clock exynos5410_plls[nr_plls] __initdata = {
