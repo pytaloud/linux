@@ -115,6 +115,13 @@
 			samsung,pin-pud = <0>;
 			samsung,pin-drv = <0>;
 		};
+
+		hdmi_hpd_irq: hdmi-hpd-irq {
+			samsung,pins = "gpx3-7";
+			samsung,pin-function = <0>;
+			samsung,pin-pud = <1>;
+			samsung,pin-drv = <0>;
+		};
 	};
  
 	/* ic21 */
@@ -273,14 +280,15 @@
 					regulator-min-microvolt = <1000000>;
 					regulator-max-microvolt = <1000000>;
 					regulator-always-on;
-					regulator-op-mode = <1>;
+					regulator-op-mode = <3>;
 				};
 				ldo10_reg: LDO10 {
-					regulator-name = "vdd_ldo10";
+					/*regulator-name = "vdd_ldo10";*/
+					regulator-name = "vdd_osc";
 					regulator-min-microvolt = <1800000>;
 					regulator-max-microvolt = <1800000>;
 					regulator-always-on;
-					regulator-op-mode = <1>;
+					regulator-op-mode = <3>;
 				};
 				ldo11_reg: LDO11 {
 					regulator-name = "vdd_ldo11";
@@ -510,4 +518,21 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&usb3_vbus1_en>, <&usb3_overcur1_u3>, <&usb3_overcur1_u2>;
 	};
+
+    hdmi {
+        hpd-gpio = <&gpx3 7 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&hdmi_hpd_irq>;
+        hdmi-en-supply = <&fixed_regulator>;
+        vdd-supply = <&ldo8_reg>;
+        vdd_osc-supply = <&ldo10_reg>;
+        vdd_pll-supply = <&ldo8_reg>;
+    };
+    
+    fixed_regulator: fixedregulator@0 {
+        compatible = "regulator-fixed";
+        regulator-name = "hdmi-en";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+    };
 };
