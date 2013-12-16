@@ -117,7 +117,11 @@ PNAME(mpll_p)		= { "fin_pll", "fout_mpll", };
 PNAME(kpll_p)		= { "fin_pll", "fout_kpll", };
 PNAME(dpll_p)		= { "fin_pll", "fout_dpll", };
 PNAME(epll_p)		= { "fin_pll", "fout_epll", };
+#if 0
 PNAME(vpll_p)		= { "mout_vpllsrc", "fout_vpll", };
+#else
+PNAME(vpll_p)		= { "fout_vpll", "mout_vpllsrc",  };
+#endif
 PNAME(ipll_p)		= { "fin_pll", "fout_ipll", };
 
 PNAME(mout_cpu_p)	= { "mout_apll", "sclk_mpll", };
@@ -142,7 +146,7 @@ static struct samsung_fixed_rate_clock exynos5410_fixed_rate_ext_clks[] __initda
 
 /* fixed rate clocks generated inside the soc */
 struct samsung_fixed_rate_clock exynos5410_fixed_rate_clks[] __initdata = {
-	FRATE(0, "sclk_hdmiphy", NULL, CLK_IS_ROOT, 24000000),
+	FRATE(CLK_SCLK_HDMIPHY, "sclk_hdmiphy", NULL, CLK_IS_ROOT, 24000000),
 	FRATE(0, "sclk_hdmi27m", NULL, CLK_IS_ROOT, 24000000),
 	FRATE(0, "sclk_dptxphy", NULL, CLK_IS_ROOT, 24000000),
 	FRATE(0, "sclk_uhostphy", NULL, CLK_IS_ROOT, 48000000),
@@ -165,7 +169,8 @@ static struct samsung_mux_clock exynos5410_mux_clks[] __initdata = {
 	MUX(0, "sclk_bpll", bpll_p, SRC_CDREX, 0, 1),
 	MUX(0, "sclk_bpll_muxed", bpll_user_p, SRC_TOP2, 24, 1),
 
-	MUX(0, "sclk_vpll", vpll_p, SRC_TOP2, 16, 1),
+	MUX_F(CLK_SCLK_VPLL, "sclk_vpll", vpll_p, SRC_TOP2, 16, 1,
+						CLK_SET_RATE_PARENT, 0),
 
 	MUX(0, "sclk_ipll", ipll_p, SRC_TOP2, 14, 1),
 
@@ -245,6 +250,9 @@ static struct samsung_div_clock exynos5410_div_clks[] __initdata = {
 static struct samsung_gate_clock exynos5410_gate_clks[] __initdata = {
 	GATE(CLK_MCT, "mct", "aclk66", GATE_IP_PERIS, 18, 0, 0),
 
+	GATE(CLK_SCLK_HDMI, "sclk_hdmi", "mout_hdmi", 
+		SRC_MASK_DISP10, 20, 0, 0),
+
 	GATE(CLK_SCLK_MMC0, "sclk_mmc0", "div_mmc_pre0",
 		SRC_MASK_FSYS, 0, CLK_SET_RATE_PARENT, 0),
 	GATE(CLK_SCLK_MMC1, "sclk_mmc1", "div_mmc_pre1",
@@ -266,6 +274,8 @@ static struct samsung_gate_clock exynos5410_gate_clks[] __initdata = {
 	GATE(CLK_UART0, "uart0", "aclk66", GATE_IP_PERIC, 0, 0, 0),
 	GATE(CLK_UART1, "uart1", "aclk66", GATE_IP_PERIC, 1, 0, 0),
 	GATE(CLK_UART2, "uart2", "aclk66", GATE_IP_PERIC, 2, 0, 0),
+
+	GATE(CLK_I2C_HDMI, "i2c_hdmi", "aclk66", GATE_IP_PERIC, 14, 0, 0),
 
 	GATE(CLK_SCLK_UART0, "sclk_uart0", "div_uart0",
 			SRC_MASK_PERIC0, 0, CLK_SET_RATE_PARENT, 0),
@@ -301,17 +311,32 @@ static struct samsung_pll_clock exynos5410_plls[nr_plls] __initdata = {
 		KPLL_CON0, NULL),
 	[dpll] = PLL(pll_35xx, CLK_FOUT_DPLL, "fout_dpll", "fin_pll", DPLL_LOCK,
 		DPLL_CON0, NULL),
-	[epll] = PLL(pll_35xx, CLK_FOUT_EPLL, "fout_epll", "fin_pll", EPLL_LOCK,
+	[epll] = PLL(pll_36xx, CLK_FOUT_EPLL, "fout_epll", "fin_pll", EPLL_LOCK,
 		EPLL_CON0, NULL),
 	[ipll] = PLL(pll_35xx, CLK_FOUT_IPLL, "fout_ipll", "fin_pll", IPLL_LOCK,
 		IPLL_CON0, NULL),
-	[vpll] = PLL(pll_35xx, CLK_FOUT_VPLL, "fout_vpll", "mout_vpllsrc", VPLL_LOCK,
+	[vpll] = PLL(pll_36xx, CLK_FOUT_VPLL, "fout_vpll", "mout_vpllsrc", VPLL_LOCK,
 		VPLL_CON0, NULL),
 };
 
 static struct of_device_id ext_clk_match[] __initdata = {
 	{ .compatible = "samsung,exynos5410-oscclk", .data = (void *)0, },
 	{ },
+};
+
+static struct samsung_pll_rate_table vpll_24mhz_tbl[] = {
+	/* sorted in descending order */
+	/* PLL_36XX_RATE(rate, m, p, s, k) */
+	PLL_36XX_RATE(880000000, 220, 3, 1, 0),
+	PLL_36XX_RATE(640000000, 160, 3, 1, 0),
+	PLL_36XX_RATE(532000000, 133, 3, 1, 0),
+	PLL_36XX_RATE(440000000, 220, 3, 2, 0),
+	PLL_36XX_RATE(350000000, 220, 3, 2, 0),
+	PLL_36XX_RATE(330000000, 111, 2, 2, 0),
+	PLL_36XX_RATE(266000000, 133, 3, 2, 0),
+	PLL_36XX_RATE(177000000, 118, 2, 3, 0),
+	PLL_36XX_RATE(123500000, 330, 4, 4, 0),
+	PLL_36XX_RATE(89000000, 178, 3, 4, 0),
 };
 
 /* register exynos5410 clocks */
@@ -332,6 +357,7 @@ static void __init exynos5410_clk_init(struct device_node *np)
 			ext_clk_match);
 	samsung_clk_register_mux(exynos5410_pll_mux_clks,
 		ARRAY_SIZE(exynos5410_pll_mux_clks));
+	exynos5410_plls[vpll].rate_table =  vpll_24mhz_tbl;
 	samsung_clk_register_pll(exynos5410_plls, ARRAY_SIZE(exynos5410_plls),
 		reg_base);
 
