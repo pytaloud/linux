@@ -10,6 +10,7 @@
 */
 
 /dts-v1/;
+#include <dt-bindings/clock/exynos5410.h>
 #include "exynos5410.dtsi"
 
 / {
@@ -101,9 +102,67 @@
 			samsung,pin-pud = <0>;
 			samsung,pin-drv = <0>;
 		};
+
+		max98090_irq: max98090-irq {
+			samsung,pins = "gpx3-2";
+			samsung,pin-function = <0>;
+			samsung,pin-pud = <0>;
+			samsung,pin-drv = <0>;
+		};
+
+		hdmi_hpd_irq: hdmi-hpd-irq {
+			samsung,pins = "gpx3-7";
+			samsung,pin-function = <0>;
+			samsung,pin-pud = <1>;
+			samsung,pin-drv = <0>;
+		};
+	};
+ 
+	/* ic21 */
+	i2c@12C70000 {
+		status = "okay";
+		clock-frequency = <400000>;
+		codec@10 {
+			compatible = "maxim,max98090";
+			reg = <0x10>;
+			interrupts = <2 0>;
+			interrupt-parent = <&gpx3>;
+			mclk-pin = <2>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&max98090_irq>;
+		};
 	};
 
-	pinctrl@14000000 {
+    i2c@12C80000 {
+        status = "okay";
+        samsung,i2c-sda-delay = <100>;
+        samsung,i2c-max-bus-freq = <66000>;
+        samsung,i2c-slave-addr = <0x50>;
+
+        hdmihdcp@3a {
+            compatible = "samsung,exynos4210-hdmihdcp";
+            reg = <0x3a>;
+        };
+
+        hdmiddc@50 {
+            compatible = "samsung,exynos4210-hdmiddc";
+            reg = <0x50>;
+        };
+    };
+
+    i2c@12CE0000 {
+        status = "okay";
+        samsung,i2c-sda-delay = <100>;
+        samsung,i2c-max-bus-freq = <66000>;
+        samsung,i2c-slave-addr = <0x38>;
+
+        hdmihdcp@38 {
+            compatible = "samsung,exynos4210-hdmiphy";
+            reg = <0x38>;
+        };
+    };
+
+    pinctrl@14000000 {
 		usb3_overcur0_u2: usb3-overcur0-u2 {
 			samsung,pins = "gpk3-0";
 			samsung,pin-function = <2>;
@@ -147,6 +206,7 @@
 		};
 	};
 
+	/* hsic24 */
 	hsi2c@12CA0000 {
 		status = "okay";
 		samsung,hs-mode;
@@ -182,10 +242,10 @@
 					regulator-always-on;
 					regulator-op-mode = <2>;
 				};
-				ldo4_reg: LDO4 {
+				vqmmc_sdcard: ldo4_reg: LDO4 {
 					regulator-name = "vdd_sd";
-					regulator-min-microvolt = <2800000>;
-					regulator-max-microvolt = <2800000>;
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <3000000>;
 					regulator-always-on;
 					regulator-op-mode = <1>;
 				};
@@ -215,14 +275,14 @@
 					regulator-min-microvolt = <1000000>;
 					regulator-max-microvolt = <1000000>;
 					regulator-always-on;
-					regulator-op-mode = <1>;
+					regulator-op-mode = <3>;
 				};
 				ldo10_reg: LDO10 {
 					regulator-name = "vdd_ldo10";
 					regulator-min-microvolt = <1800000>;
 					regulator-max-microvolt = <1800000>;
 					regulator-always-on;
-					regulator-op-mode = <1>;
+					regulator-op-mode = <3>;
 				};
 				ldo11_reg: LDO11 {
 					regulator-name = "vdd_ldo11";
@@ -277,11 +337,10 @@
 					regulator-always-on;
 					regulator-op-mode = <0>;
 				};
-				ldo21_reg: LDO21 {
+				vmmc_sdcard: ldo21_reg: LDO21 {
 					regulator-name = "ldo_21";
-					regulator-min-microvolt = <2850000>;
-					regulator-max-microvolt = <2850000>;
-					regulator-always-on;
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <3300000>;
 				};
 				ldo23_reg: LDO23 {
 					regulator-name = "ldo_23";
@@ -480,6 +539,23 @@
 		lcd-htiming = <80 48 32 2560>;
 		lcd-vtiming = <16 8 6 1600>;
 	};
+
+    hdmi {
+        hpd-gpio = <&gpx3 7 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&hdmi_hpd_irq>;
+        hdmi-en-supply = <&fixed_regulator>;
+        vdd-supply = <&ldo8_reg>;
+        vdd_osc-supply = <&ldo10_reg>;
+        vdd_pll-supply = <&ldo8_reg>;
+    };
+    
+    fixed_regulator: fixedregulator@0 {
+        compatible = "regulator-fixed";
+        regulator-name = "hdmi-en";
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <5000000>;
+    };
 
 	fimd {
 		samsung,fimd-display = <&lcd_fimd0>;
