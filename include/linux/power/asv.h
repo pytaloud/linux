@@ -17,6 +17,7 @@ enum asv_type_id {
 	ASV_INT,
 	ASV_MIF,
 	ASV_G3D,
+	ASV_KFC,
 };
 
 #ifdef CONFIG_POWER_ASV
